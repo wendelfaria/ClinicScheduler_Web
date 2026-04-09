@@ -1,9 +1,39 @@
+using ClinicScheduler_Web.Data;
+using Microsoft.EntityFrameworkCore;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=clinicscheduler.db"));
+
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
 // Add services to the container.
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!db.Usuarios.Any())
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes("admin123"));
+        var hash = Convert.ToHexString(bytes).ToLower();
+
+        db.Usuarios.Add(new ClinicScheduler_Web.Models.Usuario
+        {
+            NomeUsuario = "admin",
+            SenhaHash = hash,
+            NivelAcesso = "admin"
+        });
+
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -17,9 +47,11 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapGet("/", () => Results.Redirect("/Login"));
 app.MapRazorPages()
    .WithStaticAssets();
 

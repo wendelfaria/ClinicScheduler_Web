@@ -1,0 +1,51 @@
+﻿@page
+@model ClinicScheduler_Web.Pages.LoginModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — ClinicScheduler</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="min-height:100vh">
+    <div class="card shadow p-4" style="width:100%;max-width:400px">
+        <h4 class="mb-4 text-center">ClinicScheduler</h4>
+
+        @if (!string.IsNullOrEmpty(Model.ErroLogin))
+        {
+            <div class="alert alert-danger">@Model.ErroLogin</div>
+        }
+
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label">Usuário</label>
+                <input type="text" name="usuario" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Senha</label>
+                <div class="input-group">
+                    <input type="password" name="senha" id="senha" class="form-control" required />
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="toggleSenha()">
+                        👁
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
+    </div>
+
+    <script>
+            function toggleSenha() {
+                const campo = document.getElementById('senha');
+                campo.type = campo.type === 'password' ? 'text' : 'password';
+            }
+    </script>
+</body>
+</html>
