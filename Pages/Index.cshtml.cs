@@ -5,9 +5,12 @@ namespace ClinicScheduler_Web.Pages
 {
     public class IndexModel : PageModel
     {
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
+                return Redirect("/Login");
 
+            return Page();
         }
     }
 }
