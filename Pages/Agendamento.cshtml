@@ -69,21 +69,22 @@
         </div>
     }
 </div>
-<!-- Menu de contexto -->
 <div id="menuContexto" style="display:none; position:absolute; z-index:1000; background:white; border:1px solid #ccc; border-radius:4px; box-shadow: 2px 2px 6px rgba(0,0,0,0.2);">
     <div class="list-group list-group-flush">
         <button id="btnConfirmado" class="list-group-item list-group-item-action text-success" onclick="alterarStatus('confirmado')">✅ Confirmado</button>
         <button id="btnCancelado" class="list-group-item list-group-item-action text-warning" onclick="alterarStatus('cancelado')">⚠️ Cancelado</button>
         <button id="btnFalta" class="list-group-item list-group-item-action text-danger" onclick="alterarStatus('falta')">❌ Falta</button>
+        <button id="btnRemover" class="list-group-item list-group-item-action text-danger" onclick="alterarStatus('disponivel')">🗑️ Remover paciente</button>
         <button id="btnBloquear" class="list-group-item list-group-item-action text-dark" onclick="alterarStatus('bloqueado')">🔒 Bloquear</button>
+        <button id="btnDesbloquear" class="list-group-item list-group-item-action text-secondary" onclick="alterarStatus('disponivel')">🔓 Desbloquear</button>
     </div>
 </div>
 
-<!-- Formulário oculto de status -->
 <form method="post" asp-page-handler="AlterarStatus" id="formStatus">
     @Html.AntiForgeryToken()
     <input type="hidden" name="horarioId" id="inputStatusHorarioId" />
     <input type="hidden" name="novoStatus" id="inputNovoStatus" />
+    <input type="hidden" name="motivoBloqueio" id="inputMotivoBloqueio" />
 </form>
 <script>
     async function carregarAgendas() {
@@ -139,11 +140,12 @@
 
     function abrirModal(horarioId, hora, status, agendaId) {
         if (status === 'bloqueado') return;
-        if (status !== 'disponivel') return;
-        document.getElementById('inputHorarioId').value = horarioId;
-        document.getElementById('inputAgendaId').value = agendaId;
-        document.getElementById('modalTitulo').innerText = `Agendar — ${hora}`;
-        new bootstrap.Modal(document.getElementById('modalAgendar')).show();
+        if (status === 'disponivel') {
+            document.getElementById('inputHorarioId').value = horarioId;
+            document.getElementById('inputAgendaId').value = agendaId;
+            document.getElementById('modalTitulo').innerText = `Agendar — ${hora}`;
+            new bootstrap.Modal(document.getElementById('modalAgendar')).show();
+        }
     }
 
     function abrirContexto(event, horarioId, status) {
@@ -153,10 +155,13 @@
         menu.style.left = event.pageX + 'px';
         menu.style.top = event.pageY + 'px';
 
-        document.getElementById('btnConfirmado').style.display = status === 'agendado' || status === 'confirmado' ? '' : 'none';
-        document.getElementById('btnCancelado').style.display = status === 'agendado' || status === 'confirmado' ? '' : 'none';
-        document.getElementById('btnFalta').style.display = status === 'agendado' || status === 'confirmado' ? '' : 'none';
+        const temPaciente = ['agendado','confirmado','cancelado','falta'].includes(status);
+        document.getElementById('btnConfirmado').style.display = temPaciente ? '' : 'none';
+        document.getElementById('btnCancelado').style.display = temPaciente ? '' : 'none';
+        document.getElementById('btnFalta').style.display = temPaciente ? '' : 'none';
+        document.getElementById('btnRemover').style.display = temPaciente ? '' : 'none';
         document.getElementById('btnBloquear').style.display = status === 'disponivel' ? '' : 'none';
+        document.getElementById('btnDesbloquear').style.display = status === 'bloqueado' ? '' : 'none';
 
         document.getElementById('inputStatusHorarioId').value = horarioId;
     }
@@ -166,6 +171,10 @@
     });
 
     function alterarStatus(novoStatus) {
+        if (novoStatus === 'bloqueado') {
+            const motivo = prompt('Motivo do bloqueio (opcional):');
+            document.getElementById('inputMotivoBloqueio').value = motivo ?? '';
+        }
         document.getElementById('inputNovoStatus').value = novoStatus;
         document.getElementById('formStatus').submit();
     }

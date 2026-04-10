@@ -68,7 +68,7 @@ namespace ClinicScheduler_Web.Pages
             Pacientes = _db.Pacientes.OrderBy(p => p.Nome).ToList();
             return Page();
         }
-        public IActionResult OnPostAlterarStatus(int horarioId, string novoStatus)
+        public IActionResult OnPostAlterarStatus(int horarioId, string novoStatus, string motivoBloqueio)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
                 return Redirect("/Login");
@@ -77,10 +77,22 @@ namespace ClinicScheduler_Web.Pages
             if (horario == null)
                 return Redirect("/Agendamento");
 
-            horario.Status = novoStatus;
+            if (novoStatus == "disponivel")
+            {
+                var agendamento = _db.Agendamentos.FirstOrDefault(a => a.HorarioId == horarioId);
+                if (agendamento != null)
+                    _db.Agendamentos.Remove(agendamento);
 
-            if (novoStatus == "bloqueado")
-                horario.ObservacaoBloqueio = "Bloqueado";
+                horario.Status = "disponivel";
+                horario.ObservacaoBloqueio = string.Empty;
+            }
+            else
+            {
+                horario.Status = novoStatus;
+                horario.ObservacaoBloqueio = novoStatus == "bloqueado"
+                    ? (string.IsNullOrEmpty(motivoBloqueio) ? "Bloqueado" : motivoBloqueio)
+                    : string.Empty;
+            }
 
             _db.SaveChanges();
             return Redirect("/Agendamento");
