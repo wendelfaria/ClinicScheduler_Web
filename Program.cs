@@ -9,6 +9,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddControllers();
 // Add services to the container.
 builder.Services.AddRazorPages();
 
@@ -52,6 +53,7 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapGet("/", () => Results.Redirect("/Login"));
+app.MapControllers();
 app.MapRazorPages()
    .WithStaticAssets();
 

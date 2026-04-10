@@ -1,0 +1,128 @@
+﻿@page
+@model ClinicScheduler_Web.Pages.AgendamentoModel
+@{
+    ViewData["Title"] = "Agendamento";
+}
+
+<div class="container mt-4">
+    <h4>Agendamento</h4>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Profissional</label>
+            <select id="selProfissional" class="form-select" onchange="carregarAgendas()">
+                <option value="">Selecione...</option>
+                @foreach (var p in Model.Profissionais)
+                {
+                    <option value="@p.Id">@p.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Agenda</label>
+            <select id="selAgenda" class="form-select" onchange="carregarHorarios()">
+                <option value="">Selecione...</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="divHorarios" style="display:none">
+        <h5 class="mb-3">Horários</h5>
+        <div id="listaHorarios" class="row g-2"></div>
+    </div>
+
+    <!-- Modal de agendamento -->
+    <div class="modal fade" id="modalAgendar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitulo">Agendar Paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="horarioId" id="inputHorarioId" />
+                    <input type="hidden" name="agendaId" id="inputAgendaId" />
+                    <div class="modal-body">
+                        <label class="form-label">Paciente</label>
+                        <select name="pacienteId" class="form-select" required>
+                            <option value="">Selecione...</option>
+                            @foreach (var p in Model.Pacientes)
+                            {
+                                <option value="@p.Id">@p.Nome</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Confirmar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="alert @(Model.Mensagem.Contains("sucesso") ? "alert-success" : "alert-danger") mt-3">
+            @Model.Mensagem
+        </div>
+    }
+</div>
+
+<script>
+    async function carregarAgendas() {
+        const profId = document.getElementById('selProfissional').value;
+        const sel = document.getElementById('selAgenda');
+        sel.innerHTML = '<option value="">Selecione...</option>';
+        document.getElementById('divHorarios').style.display = 'none';
+        if (!profId) return;
+
+        const resp = await fetch(`/api/agendas?profissionalId=${profId}`);
+        const agendas = await resp.json();
+        agendas.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.id;
+            opt.text = a.data;
+            sel.appendChild(opt);
+        });
+    }
+
+    async function carregarHorarios() {
+        const agendaId = document.getElementById('selAgenda').value;
+        if (!agendaId) return;
+
+        const resp = await fetch(`/api/horarios?agendaId=${agendaId}`);
+        const horarios = await resp.json();
+
+        const lista = document.getElementById('listaHorarios');
+        lista.innerHTML = '';
+
+        horarios.forEach(h => {
+            const cor = h.status === 'disponivel' ? 'btn-outline-success' :
+                        h.status === 'agendado' ? 'btn-primary' :
+                        h.status === 'bloqueado' ? 'btn-danger' : 'btn-secondary';
+
+            const texto = h.status === 'bloqueado' ? `${h.hora} 🔒` :
+                          h.paciente ? `${h.hora} — ${h.paciente}` : h.hora;
+
+            lista.innerHTML += `
+                <div class="col-auto">
+                    <button type="button" class="btn ${cor}"
+                        onclick="abrirModal(${h.id}, '${h.hora}', '${h.status}', ${agendaId})">
+                        ${texto}
+                    </button>
+                </div>`;
+        });
+
+        document.getElementById('divHorarios').style.display = '';
+    }
+
+    function abrirModal(horarioId, hora, status, agendaId) {
+        if (status === 'bloqueado') return;
+        document.getElementById('inputHorarioId').value = horarioId;
+        document.getElementById('inputAgendaId').value = agendaId;
+        document.getElementById('modalTitulo').innerText = `Agendar — ${hora}`;
+        new bootstrap.Modal(document.getElementById('modalAgendar')).show();
+    }
+</script>
