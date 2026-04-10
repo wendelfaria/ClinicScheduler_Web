@@ -97,6 +97,26 @@ namespace ClinicScheduler_Web.Pages
             _db.SaveChanges();
             return Redirect("/Agendamento");
         }
+        public IActionResult OnPostExcluir(int agendaId)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
+                return Redirect("/Login");
+
+            var agenda = _db.Agendas.FirstOrDefault(a => a.Id == agendaId);
+            if (agenda == null)
+                return Redirect("/Agendas");
+
+            var horarios = _db.HorariosAgenda.Where(h => h.AgendaId == agendaId).ToList();
+            var horarioIds = horarios.Select(h => h.Id).ToList();
+            var agendamentos = _db.Agendamentos.Where(a => horarioIds.Contains(a.HorarioId)).ToList();
+
+            _db.Agendamentos.RemoveRange(agendamentos);
+            _db.HorariosAgenda.RemoveRange(horarios);
+            _db.Agendas.Remove(agenda);
+            _db.SaveChanges();
+
+            return Redirect("/Agendas");
+        }
     }
 
 }

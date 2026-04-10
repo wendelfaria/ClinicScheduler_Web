@@ -35,6 +35,9 @@ namespace ClinicScheduler_Web.Pages
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
                 return Redirect("/Login");
 
+            if (profissionalId == 0)
+                return Redirect("/Agendas");
+
             if (horaFim <= horaInicio)
             {
                 Mensagem = "Horário de fim deve ser maior que o início.";
@@ -95,6 +98,26 @@ namespace ClinicScheduler_Web.Pages
             Profissionais = _db.Profissionais.OrderBy(p => p.Nome).ToList();
             Agendas = _db.Agendas.Include(a => a.Profissional).OrderByDescending(a => a.Data).ToList();
             return Page();
+        }
+        public IActionResult OnPostExcluir(int agendaId)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
+                return Redirect("/Login");
+
+            var agenda = _db.Agendas.FirstOrDefault(a => a.Id == agendaId);
+            if (agenda == null)
+                return Redirect("/Agendas");
+
+            var horarios = _db.HorariosAgenda.Where(h => h.AgendaId == agendaId).ToList();
+            var horarioIds = horarios.Select(h => h.Id).ToList();
+            var agendamentos = _db.Agendamentos.Where(a => horarioIds.Contains(a.HorarioId)).ToList();
+
+            _db.Agendamentos.RemoveRange(agendamentos);
+            _db.HorariosAgenda.RemoveRange(horarios);
+            _db.Agendas.Remove(agenda);
+            _db.SaveChanges();
+
+            return Redirect("/Agendas");
         }
     }
 }

@@ -74,6 +74,7 @@
                 <th>Fim</th>
                 <th>Intervalo</th>
                 <th>Almoço</th>
+                <th>Ação</th>
             </tr>
         </thead>
         <tbody>
@@ -87,6 +88,13 @@
                     <td>@a.HoraFim.ToString("HH:mm")</td>
                     <td>@a.IntervaloMinutos min</td>
                     <td>@(a.TemAlmoco ? $"{a.DuracaoAlmoco} min" : "Não")</td>
+                    <td>
+                        <form method="post" action="/Agendas?handler=Excluir" onsubmit="return confirm('Excluir esta agenda e todos os horários?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="agendaId" value="@a.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>
