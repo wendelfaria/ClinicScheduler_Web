@@ -17,7 +17,13 @@ namespace ClinicScheduler_Web.Pages
             _db = db;
         }
 
-        public void OnGet() { }
+        public IActionResult OnGet()
+        {
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
+                return Redirect("/Index");
+
+            return Page();
+        }
 
         public IActionResult OnPost(string usuario, string senha)
         {
