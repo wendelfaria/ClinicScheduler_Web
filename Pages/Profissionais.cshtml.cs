@@ -51,5 +51,31 @@ namespace ClinicScheduler_Web.Pages
             Profissionais = _db.Profissionais.OrderBy(p => p.Nome).ToList();
             return Page();
         }
+
+        public IActionResult OnPostExcluir(int profissionalId)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
+                return Redirect("/Login");
+
+            var profissional = _db.Profissionais.FirstOrDefault(p => p.Id == profissionalId);
+            if (profissional == null)
+                return Redirect("/Profissionais");
+
+            var agendas = _db.Agendas.Where(a => a.ProfissionalId == profissionalId).ToList();
+            foreach (var agenda in agendas)
+            {
+                var horarios = _db.HorariosAgenda.Where(h => h.AgendaId == agenda.Id).ToList();
+                var horarioIds = horarios.Select(h => h.Id).ToList();
+                var agendamentos = _db.Agendamentos.Where(a => horarioIds.Contains(a.HorarioId)).ToList();
+                _db.Agendamentos.RemoveRange(agendamentos);
+                _db.HorariosAgenda.RemoveRange(horarios);
+            }
+
+            _db.Agendas.RemoveRange(agendas);
+            _db.Profissionais.Remove(profissional);
+            _db.SaveChanges();
+
+            return Redirect("/Profissionais");
+        }
     }
 }

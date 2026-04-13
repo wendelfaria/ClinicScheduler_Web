@@ -51,6 +51,7 @@
                 <th>Data de Nascimento</th>
                 <th>Contato</th>
                 <th>Observação</th>
+                <th>Ação</th>
             </tr>
         </thead>
         <tbody id="tabela">
@@ -62,6 +63,13 @@
                     <td>@p.DataNascimento.ToString("dd/MM/yyyy")</td>
                     <td>@p.Contato</td>
                     <td>@p.Observacao</td>
+                    <td>
+                        <form method="post" action="/Pacientes?handler=Excluir" onsubmit="return confirm('Excluir este paciente?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="pacienteId" value="@p.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>

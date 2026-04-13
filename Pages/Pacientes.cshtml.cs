@@ -52,5 +52,29 @@ namespace ClinicScheduler_Web.Pages
             Pacientes = _db.Pacientes.OrderBy(p => p.Nome).ToList();
             return Page();
         }
+
+        public IActionResult OnPostExcluir(int pacienteId)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("usuario")))
+                return Redirect("/Login");
+
+            var paciente = _db.Pacientes.FirstOrDefault(p => p.Id == pacienteId);
+            if (paciente == null)
+                return Redirect("/Pacientes");
+
+            var agendamentos = _db.Agendamentos.Where(a => a.PacienteId == pacienteId).ToList();
+            foreach (var a in agendamentos)
+            {
+                var horario = _db.HorariosAgenda.FirstOrDefault(h => h.Id == a.HorarioId);
+                if (horario != null)
+                    horario.Status = "disponivel";
+            }
+
+            _db.Agendamentos.RemoveRange(agendamentos);
+            _db.Pacientes.Remove(paciente);
+            _db.SaveChanges();
+
+            return Redirect("/Pacientes");
+        }
     }
 }

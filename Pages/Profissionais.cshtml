@@ -48,6 +48,7 @@
                 <th>Nome</th>
                 <th>Data de Nascimento</th>
                 <th>Especialidade</th>
+                <th>Ação</th>
             </tr>
         </thead>
         <tbody id="tabela">
@@ -58,6 +59,13 @@
                     <td>@p.Nome</td>
                     <td>@p.DataNascimento.ToString("dd/MM/yyyy")</td>
                     <td>@p.Especialidade</td>
+                    <td>
+                        <form method="post" action="/Profissionais?handler=Excluir" onsubmit="return confirm('Excluir este profissional?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="profissionalId" value="@p.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>
