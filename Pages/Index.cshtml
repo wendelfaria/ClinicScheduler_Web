@@ -1,11 +1,48 @@
 ﻿@page
-@model IndexModel
+@model ClinicScheduler_Web.Pages.IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Logado como: @HttpContext.Session.GetString("usuario")</p>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+    <h4 class="mb-4">Dashboard</h4>
+
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body">
+                    <h6 class="card-title">Pacientes</h6>
+                    <h2 class="card-text">@Model.TotalPacientes</h2>
+                    <a href="/Pacientes" class="text-white text-decoration-none small">Ver todos →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body">
+                    <h6 class="card-title">Profissionais</h6>
+                    <h2 class="card-text">@Model.TotalProfissionais</h2>
+                    <a href="/Profissionais" class="text-white text-decoration-none small">Ver todos →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-dark shadow">
+                <div class="card-body">
+                    <h6 class="card-title">Agendas</h6>
+                    <h2 class="card-text">@Model.TotalAgendas</h2>
+                    <a href="/Agendas" class="text-white text-decoration-none small">Ver todas →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow">
+                <div class="card-body">
+                    <h6 class="card-title">Agendamentos</h6>
+                    <h2 class="card-text">@Model.TotalAgendamentos</h2>
+                    <a href="/Agendamento" class="text-white text-decoration-none small">Ver todos →</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
